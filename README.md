@@ -1,66 +1,149 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# LMS Plataforma
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Sistema de gestao de aprendizagem desenvolvido em Laravel 10. A aplicacao organiza cursos, aulas, provas, certificados, entidades, grupos e trilhas de aprendizagem para diferentes perfis de usuario.
 
-## About Laravel
+## Principais recursos
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- Area do aluno com matricula em cursos, progresso por aula, provas e certificados.
+- Area do instrutor para criar cursos, aulas, imagens de conteudo, provas e relatorios de alunos.
+- Area do gestor de entidade para convidar membros, criar grupos, montar trilhas e atribui-las a usuarios ou grupos.
+- Area administrativa para gerenciar usuarios, entidades e compartilhamento de cursos entre entidades.
+- Certificados com codigo publico de verificacao em `/certificates/verify/{code}`.
+- Autenticacao baseada no Laravel Breeze.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Perfis de acesso
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+O acesso por perfil e controlado por campos booleanos na tabela `users`:
 
-## Learning Laravel
+- `is_admin`: acesso ao painel administrativo e tambem as areas de instrutor/gestor.
+- `is_instructor`: acesso a gestao de cursos e aulas.
+- `is_entity_manager`: acesso a gestao de entidade, grupos, trilhas e convites.
+- Usuario sem flags: acesso de aluno/colaborador.
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+## Stack
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+- PHP 8.1+
+- Laravel 10
+- MySQL/MariaDB
+- Laravel Sanctum
+- Laravel Breeze
+- Blade, Vite, Tailwind CSS e Alpine.js
+- PHPUnit
+- Docker para publicacao em producao
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains over 2000 video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+## Estrutura do projeto
 
-## Laravel Sponsors
+- `app/Models`: modelos do dominio (`Course`, `Lesson`, `Quiz`, `Trail`, `Certificate`, `Entity`, `Group`, `User`).
+- `app/Http/Controllers`: controllers das areas de aluno, instrutor, gestor, admin e certificados.
+- `routes/web.php`: rotas web principais da aplicacao.
+- `resources/views`: telas Blade separadas por area (`admin`, `manager`, `instructor`, `student`, `auth`).
+- `database/migrations`: definicao completa do schema do banco.
+- `database/seeders`: dados de demonstracao para ambiente local.
+- `tests`: testes PHPUnit.
+- `deploy`: exemplos de configuracao para producao.
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the Laravel [Patreon page](https://patreon.com/taylorotwell).
+## Instalacao local
 
-### Premium Partners
+1. Instale dependencias:
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Cubet Techno Labs](https://cubettech.com)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[Many](https://www.many.co.uk)**
-- **[Webdock, Fast VPS Hosting](https://www.webdock.io/en)**
-- **[DevSquad](https://devsquad.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[OP.GG](https://op.gg)**
-- **[WebReinvent](https://webreinvent.com/?utm_source=laravel&utm_medium=github&utm_campaign=patreon-sponsors)**
-- **[Lendio](https://lendio.com)**
+```bash
+composer install
+npm install
+```
 
-## Contributing
+2. Crie o `.env` e gere a chave:
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+```powershell
+Copy-Item .env.example .env
+php artisan key:generate
+```
 
-## Code of Conduct
+3. Configure o banco no `.env`:
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+```env
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=lms
+DB_USERNAME=root
+DB_PASSWORD=
+```
 
-## Security Vulnerabilities
+4. Crie o schema com migrations:
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+```bash
+php artisan migrate
+php artisan storage:link
+```
 
-## License
+5. Para carregar dados de demonstracao local:
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+```bash
+php artisan db:seed
+```
+
+## Dados de demonstracao
+
+O seeder cria entidades, cursos, aulas, prova, grupos, trilha e usuarios de teste. Use apenas em desenvolvimento.
+
+Credenciais principais:
+
+- Admin: `admin@lms.com` / `password`
+- Gestor A: `gestor_a@lms.com` / `password`
+- Instrutor A: `instrutor_a@lms.com` / `password`
+- Aluno A: `aluno_a@lms.com` / `password`
+
+Em producao, nao rode seeders por padrao. O banco deve ser criado pelas migrations com `php artisan migrate --force`.
+
+## Executar localmente
+
+Em dois terminais:
+
+```bash
+php artisan serve
+npm run dev
+```
+
+Acesse `http://127.0.0.1:8000`.
+
+## Testes
+
+```bash
+php artisan test
+```
+
+Os testes usam PHPUnit e ficam em `tests/Feature` e `tests/Unit`.
+
+## Producao com Docker
+
+A publicacao de producao deve seguir o guia [PUBLICACAO_PRODUCAO.md](PUBLICACAO_PRODUCAO.md). O fluxo usa Docker Compose com containers para aplicacao PHP-FPM, Nginx e MySQL.
+
+Resumo:
+
+```bash
+cp deploy/.env.docker.example .env
+docker compose --env-file .env -f docker-compose.production.yml build
+docker compose --env-file .env -f docker-compose.production.yml up -d
+docker compose --env-file .env -f docker-compose.production.yml exec app php artisan migrate --force
+```
+
+As tabelas, indices e relacionamentos sao sempre gerados pelas migrations. O container MySQL cria apenas o database vazio.
+
+## Comandos uteis
+
+```bash
+php artisan migrate:status
+php artisan optimize:clear
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
+npm run build
+./vendor/bin/pint
+```
+
+## Observacoes de seguranca
+
+- Nunca versionar `.env` ou senhas reais.
+- Manter `APP_DEBUG=false` em producao.
+- Usar HTTPS em producao e manter `SESSION_SECURE_COOKIE=true`.
+- Fazer backup do banco antes de executar novas migrations em producao.
