@@ -1,0 +1,59 @@
+services:
+  app:
+    build:
+      context: .
+      target: app
+    image: lms-app:production
+    env_file:
+      - .env
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - lms_storage:/var/www/html/storage
+      - lms_cache:/var/www/html/bootstrap/cache
+    networks:
+      - lms
+
+  web:
+    build:
+      context: .
+      target: web
+    image: lms-web:production
+    restart: unless-stopped
+    depends_on:
+      - app
+    ports:
+      - "${WEB_PORT:-8080}:80"
+    volumes:
+      - lms_storage:/var/www/html/storage:ro
+    networks:
+      - lms
+
+  db:
+    image: mysql:8.4
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+    volumes:
+      - lms_db:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p$${MYSQL_ROOT_PASSWORD} || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - lms
+
+volumes:
+  lms_db:
+  lms_storage:
+  lms_cache:
+
+networks:
+  lms:
+    driver: bridge
